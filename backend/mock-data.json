@@ -1,0 +1,319 @@
+{
+  "providers": [
+    {
+      "id": "aws",
+      "name": "AWS",
+      "icon": "🟠",
+      "color": "#FF9900",
+      "totalWaste": 247.30,
+      "resources": [
+        {
+          "id": "aws-ec2-1",
+          "type": "EC2 Instance",
+          "name": "prod-web-server-idle",
+          "monthlyCost": 14.60,
+          "wasteReason": "Instance running but idle",
+          "severity": "high",
+          "savings": 14.60,
+          "rootCause": "EC2 instance has been idle for 45 days with minimal CPU utilization (<2%). Instance is still running and accumulating charges despite no active workloads.",
+          "recommendation": "Terminate the instance or use AWS Lambda for sporadic workloads. Consider using EC2 Spot Instances for non-critical workloads to reduce costs by 70%.",
+          "codeExample": "aws ec2 terminate-instances --instance-ids i-0123456789abcdef --region us-east-1"
+        },
+        {
+          "id": "aws-rds-1",
+          "type": "RDS Database",
+          "name": "legacy-db-oversized",
+          "monthlyCost": 120.00,
+          "wasteReason": "Oversized database instance",
+          "severity": "critical",
+          "savings": 120.00,
+          "rootCause": "RDS instance allocated for db.r5.4xlarge with 16 vCPU and 128GB RAM, but only using 5% of compute and 3% of memory. Provisioned for peak load that rarely occurs.",
+          "recommendation": "Downsize to db.r5.large (2 vCPU, 16GB RAM). Use Aurora Auto-scaling to handle variable loads. This maintains performance while reducing monthly costs.",
+          "codeExample": "aws rds modify-db-instance --db-instance-identifier legacy-db --db-instance-class db.r5.large --apply-immediately"
+        },
+        {
+          "id": "aws-ebs-1",
+          "type": "EBS Volume",
+          "name": "unattached-volume-gp2",
+          "monthlyCost": 8.20,
+          "wasteReason": "Unattached storage volume",
+          "severity": "medium",
+          "savings": 8.20,
+          "rootCause": "20GB EBS gp2 volume has been unattached from any instance for 60+ days. No snapshots or backups depend on it.",
+          "recommendation": "Delete the unattached volume. If data preservation is needed, create a snapshot before deletion.",
+          "codeExample": "aws ec2 delete-volume --volume-id vol-0123456789abcdef --region us-east-1"
+        },
+        {
+          "id": "aws-s3-1",
+          "type": "S3 Bucket",
+          "name": "old-backups-unneeded",
+          "monthlyCost": 45.80,
+          "wasteReason": "Storing old backup files",
+          "severity": "high",
+          "savings": 45.80,
+          "rootCause": "S3 bucket storing 450GB of backup data from 2022-2023. Backups older than 1 year per company retention policy. Using standard storage class instead of Glacier.",
+          "recommendation": "Transition old backups to S3 Glacier for cold storage (90% cheaper). Implement S3 Lifecycle policies to auto-archive after 90 days.",
+          "codeExample": "aws s3api put-bucket-lifecycle-configuration --bucket old-backups-unneeded --lifecycle-configuration file://lifecycle.json"
+        },
+        {
+          "id": "aws-elb-1",
+          "type": "Load Balancer",
+          "name": "unused-elb-classic",
+          "monthlyCost": 18.70,
+          "wasteReason": "Inactive load balancer",
+          "severity": "high",
+          "savings": 18.70,
+          "rootCause": "Classic Load Balancer receiving zero traffic for 45 days but still provisioned and incurring hourly charges.",
+          "recommendation": "Delete the unused load balancer. Consider using Application Load Balancer (ALB) if traffic resurges, as it's more cost-efficient.",
+          "codeExample": "aws elb delete-load-balancer --load-balancer-name unused-elb-classic --region us-east-1"
+        },
+        {
+          "id": "aws-snap-1",
+          "type": "EBS Snapshot",
+          "name": "snapshot-outdated-2022",
+          "monthlyCost": 5.40,
+          "wasteReason": "Old snapshot no longer needed",
+          "severity": "medium",
+          "savings": 5.40,
+          "rootCause": "35GB EBS snapshot created in January 2022. No instances depend on it and retention policy suggests deletion.",
+          "recommendation": "Delete outdated snapshots. Implement automated snapshot lifecycle to retain only recent backups.",
+          "codeExample": "aws ec2 delete-snapshot --snapshot-id snap-0123456789abcdef --region us-east-1"
+        },
+        {
+          "id": "aws-eip-1",
+          "type": "Elastic IP",
+          "name": "unused-elastic-ip",
+          "monthlyCost": 3.65,
+          "wasteReason": "Unassociated Elastic IP",
+          "severity": "medium",
+          "savings": 3.65,
+          "rootCause": "Elastic IP address allocated but not associated with any EC2 instance. AWS charges hourly for unassociated IPs.",
+          "recommendation": "Release the unused Elastic IP address or associate it with an active instance.",
+          "codeExample": "aws ec2 release-address --allocation-id eipalloc-0123456789abcdef --region us-east-1"
+        },
+        {
+          "id": "aws-ec2-2",
+          "type": "EC2 Dev Server",
+          "name": "dev-sandbox-always-on",
+          "monthlyCost": 14.60,
+          "wasteReason": "Development server always running",
+          "severity": "high",
+          "savings": 14.60,
+          "rootCause": "Development EC2 instance running 24/7 even during non-business hours. Only used during weekday business hours by 2 developers.",
+          "recommendation": "Stop instance during off-hours using AWS Instance Scheduler. Or use on-demand startup with auto-shutdown scripts.",
+          "codeExample": "aws ec2 stop-instances --instance-ids i-0123456789abcdef --region us-east-1"
+        }
+      ]
+    },
+    {
+      "id": "gcp",
+      "name": "Google Cloud",
+      "icon": "🔵",
+      "color": "#4285F4",
+      "totalWaste": 189.45,
+      "resources": [
+        {
+          "id": "gcp-vm-1",
+          "type": "Compute Engine VM",
+          "name": "idle-instance-n1-standard",
+          "monthlyCost": 22.50,
+          "wasteReason": "Idle VM instance",
+          "severity": "high",
+          "savings": 22.50,
+          "rootCause": "n1-standard-2 VM instance in us-central1 zone with CPU utilization below 3% for 50 consecutive days. Instance remains in RUNNING state.",
+          "recommendation": "Delete the instance or migrate workload to Cloud Functions (serverless). Consider using Preemptible VMs for cost reduction.",
+          "codeExample": "gcloud compute instances delete idle-instance-n1-standard --zone=us-central1-a --quiet"
+        },
+        {
+          "id": "gcp-sql-1",
+          "type": "Cloud SQL Instance",
+          "name": "mysql-oversized-prod",
+          "monthlyCost": 95.00,
+          "wasteReason": "Oversized database instance",
+          "severity": "critical",
+          "savings": 95.00,
+          "rootCause": "Cloud SQL db-custom-8-32768 (8 vCPU, 32GB RAM) provisioned for peak capacity but average CPU <8%, memory <5%. High availability replication enabled but not needed.",
+          "recommendation": "Downsize to db-custom-2-7680 (2 vCPU, 7.5GB RAM). Disable HA replication for non-critical databases.",
+          "codeExample": "gcloud sql instances patch mysql-oversized-prod --tier=db-custom-2-7680"
+        },
+        {
+          "id": "gcp-disk-1",
+          "type": "Persistent Disk",
+          "name": "unattached-pd-standard",
+          "monthlyCost": 12.35,
+          "wasteReason": "Unattached storage disk",
+          "severity": "medium",
+          "savings": 12.35,
+          "rootCause": "100GB persistent disk in us-central1-a zone unattached from any VM instance for 45 days. No snapshots reference it.",
+          "recommendation": "Delete the disk or attach to an active VM. Create snapshot if archival is needed.",
+          "codeExample": "gcloud compute disks delete unattached-pd-standard --zone=us-central1-a --quiet"
+        },
+        {
+          "id": "gcp-storage-1",
+          "type": "Cloud Storage",
+          "name": "logs-archive-old",
+          "monthlyCost": 28.60,
+          "wasteReason": "Old log files in standard storage",
+          "severity": "high",
+          "savings": 28.60,
+          "rootCause": "520GB of application logs from 2022 stored in multi-region Standard class. Logs older than 90 days per retention policy. No active queries access this data.",
+          "recommendation": "Move to Nearline or Coldline storage. Implement lifecycle rules for automatic archival. This reduces cost by 60-80%.",
+          "codeExample": "gsutil lifecycle set lifecycle.json gs://logs-archive-old"
+        },
+        {
+          "id": "gcp-lb-1",
+          "type": "Load Balancer",
+          "name": "legacy-lb-unused",
+          "monthlyCost": 15.00,
+          "wasteReason": "Inactive load balancer",
+          "severity": "high",
+          "savings": 15.00,
+          "rootCause": "Network Load Balancer provisioned but receiving <1 request/day. Backend services deprecated but load balancer not removed.",
+          "recommendation": "Delete the unused load balancer. Use Cloud CDN with Cloud Load Balancing for active services only.",
+          "codeExample": "gcloud compute forwarding-rules delete legacy-lb-unused --global --quiet"
+        },
+        {
+          "id": "gcp-ip-1",
+          "type": "Static IP",
+          "name": "reserved-ip-unused",
+          "monthlyCost": 7.20,
+          "wasteReason": "Unused static IP reservation",
+          "severity": "medium",
+          "savings": 7.20,
+          "rootCause": "Static IP address reserved but not assigned to any resource. Reserved IP addresses incur hourly charges.",
+          "recommendation": "Release the static IP or assign it to an active resource.",
+          "codeExample": "gcloud compute addresses delete reserved-ip-unused --region=us-central1 --quiet"
+        },
+        {
+          "id": "gcp-snap-1",
+          "type": "Snapshot",
+          "name": "snapshot-test-old",
+          "monthlyCost": 4.80,
+          "wasteReason": "Old test snapshot",
+          "severity": "medium",
+          "savings": 4.80,
+          "rootCause": "40GB snapshot created during testing in March 2023. Marked as test data but never deleted. No active backups depend on it.",
+          "recommendation": "Delete old test snapshots. Implement automatic snapshot retention policies.",
+          "codeExample": "gcloud compute snapshots delete snapshot-test-old --quiet"
+        },
+        {
+          "id": "gcp-vm-2",
+          "type": "Compute Engine Dev",
+          "name": "dev-workspace-unused",
+          "monthlyCost": 18.50,
+          "wasteReason": "Development VM always running",
+          "severity": "high",
+          "savings": 18.50,
+          "rootCause": "n1-standard-4 VM used for development but running 24/7 including weekends. Team only accesses Monday-Friday 9AM-6PM.",
+          "recommendation": "Use Compute Engine Shielded VMs with startup/shutdown scripts. Or use Cloud Shell for occasional dev work.",
+          "codeExample": "gcloud compute instances stop dev-workspace-unused --zone=us-central1-a"
+        }
+      ]
+    },
+    {
+      "id": "azure",
+      "name": "Azure",
+      "icon": "🔷",
+      "color": "#0078D4",
+      "totalWaste": 312.80,
+      "resources": [
+        {
+          "id": "azure-vm-1",
+          "type": "Virtual Machine",
+          "name": "prod-app-server-idle",
+          "monthlyCost": 31.20,
+          "wasteReason": "Idle VM instance",
+          "severity": "high",
+          "savings": 31.20,
+          "rootCause": "Standard_D2s_v3 VM running in East US region showing <2% CPU utilization for 40 consecutive days. VM deallocated would save costs immediately.",
+          "recommendation": "Deallocate the VM during non-working hours using Azure Automation Runbooks. Or migrate to Spot VMs (70% savings).",
+          "codeExample": "az vm deallocate --resource-group myResourceGroup --name prod-app-server-idle"
+        },
+        {
+          "id": "azure-sql-1",
+          "type": "SQL Database",
+          "name": "legacy-db-large",
+          "monthlyCost": 180.00,
+          "wasteReason": "Oversized database",
+          "severity": "critical",
+          "savings": 180.00,
+          "rootCause": "Azure SQL Database (Business Critical, 32 vCore) provisioned for peak load but running at 4% CPU and 6% memory utilization. High redundancy not needed.",
+          "recommendation": "Downsize to General Purpose tier (4 vCore). This maintains SLA while reducing monthly cost by 85%.",
+          "codeExample": "az sql db update --resource-group myResourceGroup --server myServer --name legacy-db-large --edition GeneralPurpose --capacity 4"
+        },
+        {
+          "id": "azure-disk-1",
+          "type": "Managed Disk",
+          "name": "unattached-disk-premium",
+          "monthlyCost": 15.60,
+          "wasteReason": "Unattached managed disk",
+          "severity": "medium",
+          "savings": 15.60,
+          "rootCause": "128GB Premium SSD managed disk unattached from any VM for 50+ days. Premium tier is expensive for unused storage.",
+          "recommendation": "Delete the disk or attach to active VM. Convert to Standard SSD if archival needed.",
+          "codeExample": "az disk delete --resource-group myResourceGroup --name unattached-disk-premium --yes"
+        },
+        {
+          "id": "azure-storage-1",
+          "type": "Blob Storage",
+          "name": "cold-data-archive",
+          "monthlyCost": 35.50,
+          "wasteReason": "Cold data in hot storage tier",
+          "severity": "high",
+          "savings": 35.50,
+          "rootCause": "850GB of historical data stored in Hot tier blob storage. Data accessed <5 times per year. Should be in Archive tier (90% cheaper).",
+          "recommendation": "Move to Archive or Cool tier using Azure lifecycle management policies. Archive tier costs $0.018 per GB/month vs Hot $0.018.",
+          "codeExample": "az storage account blob-service-properties update --account-name myStorageAccount --enable-restore-policy false"
+        },
+        {
+          "id": "azure-lb-1",
+          "type": "Load Balancer",
+          "name": "unused-lb-standard",
+          "monthlyCost": 22.50,
+          "wasteReason": "Inactive load balancer",
+          "severity": "high",
+          "savings": 22.50,
+          "rootCause": "Standard Load Balancer configured but associated backend pool empty for 60 days. No traffic processed.",
+          "recommendation": "Delete unused load balancer. Use Application Gateway for active services only.",
+          "codeExample": "az network lb delete --resource-group myResourceGroup --name unused-lb-standard"
+        },
+        {
+          "id": "azure-pip-1",
+          "type": "Public IP",
+          "name": "unassigned-public-ip",
+          "monthlyCost": 4.20,
+          "wasteReason": "Unassigned public IP",
+          "severity": "medium",
+          "savings": 4.20,
+          "rootCause": "Static public IP address allocated but not assigned to any network interface. Azure charges for unused public IPs.",
+          "recommendation": "Delete the public IP or assign to an active resource (VM, NIC).",
+          "codeExample": "az network public-ip delete --resource-group myResourceGroup --name unassigned-public-ip"
+        },
+        {
+          "id": "azure-snap-1",
+          "type": "Snapshot",
+          "name": "old-backup-snapshot",
+          "monthlyCost": 7.00,
+          "wasteReason": "Old snapshot backup",
+          "severity": "medium",
+          "savings": 7.00,
+          "rootCause": "50GB managed disk snapshot from August 2023 retained for compliance but never restored or validated.",
+          "recommendation": "Delete old snapshots. Use Azure Backup for automated, compliant retention with lifecycle policies.",
+          "codeExample": "az snapshot delete --resource-group myResourceGroup --name old-backup-snapshot"
+        },
+        {
+          "id": "azure-vm-2",
+          "type": "VM Dev Instance",
+          "name": "dev-test-always-on",
+          "monthlyCost": 16.80,
+          "wasteReason": "Development VM always running",
+          "severity": "high",
+          "savings": 16.80,
+          "rootCause": "Standard_D4s_v3 dev/test VM running continuously including nights and weekends. Used only during working hours.",
+          "recommendation": "Use auto-shutdown feature or deallocate after hours using Azure Functions scheduler.",
+          "codeExample": "az vm auto-shutdown --resource-group myResourceGroup --name dev-test-always-on --time 2000"
+        }
+      ]
+    }
+  ]
+}

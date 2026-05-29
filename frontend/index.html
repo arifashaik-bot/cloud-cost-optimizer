@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Cost Optimization Agent</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Background gradient -->
+    <div class="bg-gradient"></div>
+
+    <!-- Main container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1 class="title">
+                     <i class="fas fa-cloud"></i> Cloud Cost Optimization Agent
+                    </h1>
+                    <p class="subtitle">AI-Powered Cloud Savings for AWS, Google Cloud & Azure</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="downloadPdfBtn" style="display: none;">
+                        <i class="fas fa-file-pdf"></i> Download Report
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main>
+            <!-- Provider selection section -->
+            <section id="providerSection" class="provider-section">
+                <h2 class="section-title">Select Cloud Provider</h2>
+                <div class="provider-grid" id="providerGrid">
+                    <!-- Provider cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Dashboard section (hidden initially) -->
+            <section id="dashboardSection" class="dashboard-section hidden">
+                <!-- Stats cards -->
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-label">Total Waste</div>
+                        <div class="stat-value" id="totalWaste">$0.00</div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-label">Resources</div>
+                        <div class="stat-value" id="resourceCount">0</div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">💡</div>
+                        <div class="stat-label">Potential Savings</div>
+                        <div class="stat-value" id="potentialSavings">$0.00</div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-label">Payoff Timeline</div>
+                        <div class="stat-value" id="payoffTime">1 Month</div>
+                    </div>
+                </div>
+
+                <!-- FEATURE 1: Cost Savings Calculator -->
+                <div class="feature-section glass-card">
+                    <h3 class="feature-title">💰 Projected Annual Savings Calculator</h3>
+                    <div class="savings-calculator-content">
+                        <p class="feature-description">Drag the slider to calculate your potential 12-month savings</p>
+                        <div class="slider-container">
+                            <input type="range" id="savingsSlider" min="0" max="5000" step="100" value="0" class="savings-slider">
+                            <div class="slider-labels">
+                                <span>$0</span>
+                                <span>$5,000</span>
+                            </div>
+                        </div>
+                        <p id="savingsText" class="savings-text">If you fix these, you save $0 per year</p>
+                    </div>
+                </div>
+
+                <!-- FEATURE 2: Download PDF Report Button (already in header) -->
+                <!-- Shown in header as: <button class="btn btn-primary" id="downloadPdfBtn"> -->
+
+                <!-- Provider-Specific Features Section -->
+                <div id="providerFeaturesSection">
+                    <!-- AWS FEATURES -->
+                    <div id="aws-features" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">📊 AWS - Cost Breakdown</h3>
+                        <div class="feature-content">
+                            <canvas id="awsCostChart"></canvas>
+                            <p class="feature-description">Monthly cost distribution across resource types</p>
+                        </div>
+                    </div>
+
+                    <div id="aws-features-2" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">🖥️ AWS - EC2 Instance Optimizer</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Idle Instances Found:</span>
+                                    <strong id="idleEc2Count" class="metric-value">0</strong>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Potential Savings:</span>
+                                    <strong id="ec2Savings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="optimizeEC2()">
+                                <i class="fas fa-rocket"></i> Optimize Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="aws-features-3" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">🗂️ AWS - S3 Storage Analyzer</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Old Backups:</span>
+                                    <strong id="oldBackupCount" class="metric-value">0</strong><span>files</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Archived Storage Savings:</span>
+                                    <strong id="s3Savings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="archiveS3()">
+                                <i class="fas fa-archive"></i> Archive Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- GCP FEATURES -->
+                    <div id="gcp-features" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">📈 Google Cloud - Resource Usage Timeline</h3>
+                        <div class="feature-content">
+                            <canvas id="gcpTimelineChart"></canvas>
+                            <p class="feature-description">7-day resource utilization trends</p>
+                        </div>
+                    </div>
+
+                    <div id="gcp-features-2" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">⚙️ Google Cloud - Compute Engine Analyzer</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Oversized VMs:</span>
+                                    <strong id="oversizedVMs" class="metric-value">0</strong>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Downsizing Savings:</span>
+                                    <strong id="computeSavings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="downsizeCompute()">
+                                <i class="fas fa-compress"></i> Downsize VMs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="gcp-features-3" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">☁️ Google Cloud - Storage Optimization</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Lifecycle Rules Applied:</span>
+                                    <strong id="lifecycleCount" class="metric-value">0</strong>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Auto-Archive Savings:</span>
+                                    <strong id="storageSavings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="applyStorageRules()">
+                                <i class="fas fa-cogs"></i> Apply Rules
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AZURE FEATURES -->
+                    <div id="azure-features" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">📊 Azure - VM Performance Metrics</h3>
+                        <div class="feature-content">
+                            <canvas id="azureVMChart"></canvas>
+                            <p class="feature-description">CPU & Memory utilization across VMs</p>
+                        </div>
+                    </div>
+
+                    <div id="azure-features-2" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">🗄️ Azure - SQL Database Optimizer</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Over-Provisioned DBs:</span>
+                                    <strong id="overProvisionedDBs" class="metric-value">0</strong>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Right-Sizing Savings:</span>
+                                    <strong id="sqlSavings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="optimizeSQL()">
+                                <i class="fas fa-database"></i> Right-Size DBs
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="azure-features-3" class="feature-section glass-card hidden">
+                        <h3 class="feature-title">📦 Azure - Storage Tier Analyzer</h3>
+                        <div class="feature-content">
+                            <div class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Cold Data in Hot Tier:</span>
+                                    <strong id="coldDataSize" class="metric-value">0</strong><span>GB</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Tiering Savings:</span>
+                                    <strong id="tieringSavings" class="metric-value">$0</strong><span>/month</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-full" onclick="applyTiering()">
+                                <i class="fas fa-layer-group"></i> Apply Tiering
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart section -->
+                <div class="feature-section glass-card">
+                    <h3 class="feature-title">📈 3-Month Savings Projection</h3>
+                    <canvas id="savingsChart"></canvas>
+                </div>
+
+                <!-- Resources table -->
+                <div class="feature-section glass-card">
+                    <div class="table-header">
+                        <h3 class="feature-title">📋 Wasteful Resources</h3>
+                        <button class="btn btn-primary" id="fixAllBtn">
+                            <i class="fas fa-magic"></i> Fix All
+                        </button>
+                    </div>
+
+                    <div class="table-scroll">
+                        <table class="resources-table" id="resourcesTable">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Resource Name</th>
+                                    <th>Monthly Cost</th>
+                                    <th>Waste Reason</th>
+                                    <th>Severity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resourcesTableBody">
+                                <!-- Resources will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Back button -->
+                <button class="btn btn-secondary" id="backBtn">
+                    <i class="fas fa-arrow-left"></i> Back to Providers
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for AI Analysis -->
+    <div class="modal hidden" id="analysisModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div class="modal-header">
+                <h2 id="modalTitle">Resource Analysis</h2>
+                <span class="severity-badge" id="modalSeverity"></span>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>📋 Resource Details</h4>
+                    <p><strong>Type:</strong> <span id="modalType"></span></p>
+                    <p><strong>Provider:</strong> <span id="modalProvider"></span></p>
+                    <p><strong>Monthly Cost:</strong> <span id="modalCost"></span></p>
+                    <p><strong>Potential Savings:</strong> <span id="modalSavings"></span></p>
+                </div>
+
+                <div class="modal-section">
+                    <h4>🔍 Root Cause</h4>
+                    <p id="modalRootCause"></p>
+                </div>
+
+                <div class="modal-section">
+                    <h4>✅ Recommendation</h4>
+                    <p id="modalRecommendation"></p>
+                </div>
+
+                <div class="modal-section">
+                    <h4>💻 CLI Command</h4>
+                    <pre id="modalCode"></pre>
+                    <button class="btn btn-small" id="copyCodeBtn">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+
+                <div class="modal-section">
+                    <h4>⏱️ Implementation Time</h4>
+                    <p id="modalTime"></p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modalCancelBtn">Close</button>
+                <button class="btn btn-primary" id="modalFixBtn">Apply Fix</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading spinner -->
+    <div class="spinner hidden" id="loadingSpinner">
+        <div class="spinner-content">
+            <div class="spinner-circle"></div>
+            <p>Scanning resources...</p>
+        </div>
+    </div>
+
+    <!-- FEATURE 3: Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+    <div class="confetti-success-message hidden" id="confettiMessage"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
