@@ -1,5 +1,7 @@
 // ==================== CONFIGURATION ====================
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : 'https://cloud-cost-optimizer-1-kvp0.onrender.com/api';
 let currentProvider = null;
 let currentResources = [];
 let savingsChart = null;
