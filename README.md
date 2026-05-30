@@ -2,6 +2,9 @@
 
 AI-powered tool that identifies and fixes wasteful cloud spending across AWS, Google Cloud, and Azure.
 
+## Live Demo
+🌐 Live Project: https://cloud-cost-optimizer-eight.vercel.app/
+
 ## Features
 
 - **Multi-Cloud Support**: Switch between AWS, Google Cloud, and Azure
